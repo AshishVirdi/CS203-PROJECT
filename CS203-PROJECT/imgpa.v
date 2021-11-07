@@ -537,35 +537,35 @@ initial begin
         //using signal as 1 to write the output color matrix into bmp after we apply a filter .
         BMPto256BW; 
         BWto24BMP; 
-        writeBMP(write_filename2,1);//Output
+        writeBMP(write_filename2,1);
 
         toBinary(INTENSITY);
         BWto24BMP;
-        writeBMP(write_filename3,1);//Output
+        writeBMP(write_filename3,1);
         
         invertBMP;  
-        writeBMP(write_filename4,1);//Output
+        writeBMP(write_filename4,1);
          
         brightnessBMP(40,1);
-        writeBMP(write_filename5,1);//Output
+        writeBMP(write_filename5,1);
 
         RedfilterBMP(254);
-        writeBMP(write_filename6,1);//Output
+        writeBMP(write_filename6,1);
 
         BluefilterBMP(254);
-        writeBMP(write_filename7,1);//Output
+        writeBMP(write_filename7,1);
 
         GreenfilterBMP(254);
-        writeBMP(write_filename8,1);//Output
+        writeBMP(write_filename8,1);
 
         RgfilterBMP;
-        writeBMP(write_filename9,1);//Output
+        writeBMP(write_filename9,1);
 
         RbfilterBMP;
-        writeBMP(write_filename10,1);//Output
+        writeBMP(write_filename10,1);
 
         pinkfilterBMP;
-        writeBMP(write_filename11,1);//Output
+        writeBMP(write_filename11,1);
 end
 
 endmodule
