@@ -1,0 +1,135 @@
+/**********MODULE DEFINITAIONS WITH THEIR FUNCTIONALITY**********/
+
+//ALL THE MODULE AND TASK DECLARATION MADE HERE ARE IN THEIR RESPECTIVE ORDER//
+
+/**************** MODULE HIERARCHY ******************/
+
+We read a BMP image by passing it into the readBMP task as readBMP(input [128*8:1] read_filename) where read_filename is the name of the input image.
+readBMP scans and stores the BMP header and the pixels are read into input color matrix i.e. image_in [0:`Y_SIZE][0:`X_SIZE][0:2];.
+
+Then respective filter is called that uses input color matrix i.e. image_in [0:`Y_SIZE][0:`X_SIZE][0:2] and
+writes the modified pixels into the output color matrix i.e. image_out [0:`Y_SIZE][0:`X_SIZE][0:2]
+
+Then we pass signal value and write_filename to the writeBMP task i.e.  writeBMP(input [128*8:1] write_filename,input signal) .
+
+  ->If the signal value is 0 then original/input color matrix is written as new BMP image.
+  ->If the signal value is 1 then output color matrix is written as new BMP image.
+
+
+/--------------------------------------------------------------/ 
+
+
+module Img_prc(); // no input output ports
+
+//***********  VARIABLES FOR READING AND WRITING BMP HEADER ***************// 
+reg [0:31] biCompression, biSizeImage, biXPelsPerMeter, biYPelsPerMeter, biClrUsed, biClrImportant;
+reg [0:15] bfType;
+reg [0:15] bfReserved1, bfReserved2;
+reg [0:31] bfOffBits, bfSize ,biSize, biWidth, biHeight ,temp32;
+reg [0:15] biPlanes;
+reg [0:15] biBitCount , temp16;
+reg [7:0] image_in [0:`Y_SIZE][0:`X_SIZE][0:2]; //input color matrix
+reg [7:0] image_out [0:`Y_SIZE][0:`X_SIZE][0:2]; //output color matrix
+reg [7:0] image_bw [0:`Y_SIZE][0:`X_SIZE], temp8; //shade matrix
+
+
+// FUNCTIONS FOR REVERSING 8,16 AND 32 BIT REGISTERS //
+function [7:0] rev_8b (input [7:0] data);
+function [15:0] rev_16b (input [15:0] data);
+function [31:0] rev_32b (input [31:0] data);
+
+
+
+// TASK TO READ THE BMP FILE
+
+task readBMP(input [128*8:1] read_filename);
+
+/--------------------------------------------------------/
+
+
+//TASK TO WRITE THE NEW BMP FILE
+
+task writeBMP(input [128*8:1] write_filename,input signal);
+
+/--------------------------------------------------------/
+
+// TASKS OF FILTERS 
+/******************************/
+//Convert RGB to 256 levels of Black & White
+task BMPto256BW;
+
+// Invert BMP image
+task invertBMP;
+
+// Grayscale BMP image
+task brightnessBMP(input [7:0]value,input [0:0]sign);
+
+// Redfilter BMP image
+task RedfilterBMP(input [7:0]value);
+
+// Bluefilter BMP image
+task BluefilterBMP(input [7:0]value);
+
+// Greenfilter BMP image *
+task GreenfilterBMP(input [7:0]value);
+
+// Red&greenfilter BMP image 
+task RgfilterBMP;
+
+// Red&bluefilter BMP image 
+task RbfilterBMP;
+
+// pinkfilter (only at R = 255) BMP image
+task pinkfilterBMP;
+
+// Convert Black&While to 24bit bitmap *
+task BWto24BMP;
+
+// Make binary        
+task toBinary( input [7:0] intensity);
+
+/*-----------------------------------------------------*/
+
+
+
+// AN INITIAL BLOCK TO CALL ALL THE FILTER TASKS ON THE NPUT BMP FILE FLAG.BMP
+initial begin      
+ 
+        readBMP(read_filename);   //Read bmp file
+        writeBMP(write_filename1,0); // write bmp file without filter using 0 as signal.
+  
+        //using signal as 1 to write the output color matrix into bmp after we apply a filter .
+        BMPto256BW; 
+        BWto24BMP; 
+        writeBMP(write_filename2,1);
+
+        toBinary(INTENSITY);
+        BWto24BMP;
+        writeBMP(write_filename3,1);
+        
+        invertBMP;  
+        writeBMP(write_filename4,1);
+         
+        brightnessBMP(40,1);
+        writeBMP(write_filename5,1);
+
+        RedfilterBMP(254);
+        writeBMP(write_filename6,1);
+
+        BluefilterBMP(254);
+        writeBMP(write_filename7,1);
+
+        GreenfilterBMP(254);
+        writeBMP(write_filename8,1);
+
+        RgfilterBMP;
+        writeBMP(write_filename9,1);
+
+        RbfilterBMP;
+        writeBMP(write_filename10,1);
+
+        pinkfilterBMP;
+        writeBMP(write_filename11,1);
+end
+
+endmodule
