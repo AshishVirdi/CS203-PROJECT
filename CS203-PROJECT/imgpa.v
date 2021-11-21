@@ -4,7 +4,7 @@
 `define LOW      0      //minimum value of a pixel
 
 module Img_prcs;
-parameter read_filename="FLAG.bmp";//input file name
+parameter read_filename="FLAG5.bmp";//input file name
 parameter write_filename1="Images/Original.bmp";//output file just after read
 parameter write_filename2="Images/BnW.bmp";//ouput file, Black and White with strength
 parameter write_filename3="Images/BinaryBnW.bmp";//output file Black and White with binary
@@ -16,18 +16,10 @@ parameter write_filename8="Images/Bluefltr.bmp";// Bluefilter image
 parameter write_filename9="Images/RnGfltr.bmp";// only red and green                                   
 parameter write_filename10="Images/RnBfltr.bmp";// only red and blue
 parameter write_filename11="Images/Pinkfltr.bmp";// apply pink filter to boxes where R>100;
-
-parameter write_filename12="Images/edge.bmp";// edge detection 
-parameter write_filename13="Images/Imgsmooth.bmp";// image smoothening 
-parameter write_filename14="Images/Imgsharpen.bmp";// image Sharpening
-parameter write_filename15="Images/meadian.bmp";// median filter
+parameter write_filename12="Images/B&Gfltr.bmp";// Blue and green detection 
+parameter write_filename13="Images/blurr.bmp";// edge detection 
 /* ****** EXTRA FILTERS MAY BE ADDED IF NEEDED ****** */
 
-// parameter write_filename14="14.bmp";// image smoothening 
-// parameter write_filename15="15.bmp";// image smoothening 
-// parameter write_filename16="16.bmp";// image smoothening 
-// parameter write_filename17="17.bmp";// image smoothening 
-// parameter write_filename18="18.bmp";// image smoothening 
 parameter [7:0] INTENSITY=10;
 
 
@@ -387,15 +379,54 @@ task RedfilterBMP(input [7:0]value);
                                 if (a>255)
                                    image_out[y][x][0] = 0;
                                 else
-                                   image_out[y][x][0] = a/16;
-                                image_out[y][x][1] = image_in[y][x][1]/16;
-                                image_out[y][x][2] = image_in[y][x][2]/16;
+                                   image_out[y][x][0] = a/2;
+                                image_out[y][x][1] = image_in[y][x][1]/2;
+                                image_out[y][x][2] = image_in[y][x][2]/2;
                         end
                 end
         end
 endtask
 /***********************************************************/
 
+
+// Blurr BMP image
+task Blurr_BMP(input [7:0]value);
+        integer y,i, x, sumr,sumb,sumg,count,m,n, a,b,c;
+        begin
+                for(i =0;i<value;i++)
+                begin
+                        for (y=0; y<biHeight*4; y=y+1) 
+                        begin
+                        for (x=0; x<biWidth; x=x+1)
+                         begin 
+                         count =0;
+                         sumr=0;sumb=0; sumg=0;
+                         for(m=-1; m<2;m++)
+                         begin
+                         for(n=-1;n<2;n++)
+                         begin
+                                 
+                          if (y+ m >= 0 && x + n >= 0 && y + m < biHeight*4 && x + n < biWidth)
+                          begin
+                          count =count+1;
+                          sumr = sumr +image_in[y][x][0];
+                          sumg = sumg +image_in[y][x][1];
+                          sumb = sumb +image_in[y][x][2];
+                          end
+                         end
+
+                         end
+                               
+                                image_out[y][x][0] = sumr/count;
+                                image_out[y][x][1] = sumg/count;
+                                image_out[y][x][2] = sumb/count;
+                        end
+                     end
+
+                end
+        end
+endtask
+/***********************************************************/
 
 /***********************************************************/
 // Bluefilter BMP image 
@@ -404,13 +435,13 @@ task BluefilterBMP(input [7:0]value);
         begin
                 for (y=0; y<biHeight*4; y=y+1) begin
                         for (x=0; x<biWidth; x=x+1) begin 
-                                image_out[y][x][0] = image_in[y][x][0]/16;
+                                image_out[y][x][0] = image_in[y][x][0]/4;
                                 b = image_in[y][x][1] - value;
                                 if (b>255)
                                    image_out[y][x][1] = 0;
                                 else
-                                   image_out[y][x][1] = b/16;
-                                image_out[y][x][2] = image_in[y][x][2]/16;
+                                   image_out[y][x][1] = b/4;
+                                image_out[y][x][2] = image_in[y][x][2]/4;
                         end
                 end
         end
@@ -425,13 +456,13 @@ task GreenfilterBMP(input [7:0]value);
         begin
                 for (y=0; y<biHeight*4; y=y+1) begin
                         for (x=0; x<biWidth; x=x+1) begin 
-                                image_out[y][x][0] = image_in[y][x][0]/16; 
-                                image_out[y][x][1] = image_in[y][x][1]/16;
+                                image_out[y][x][0] = image_in[y][x][0]/4; 
+                                image_out[y][x][1] = image_in[y][x][1]/4;
                                 c = image_in[y][x][2] - value;
                                 if (c>255)
                                    image_out[y][x][2] = 0;
                                 else
-                                   image_out[y][x][2] = c/16;
+                                   image_out[y][x][2] = c/4;
                         end
                 end
         end
@@ -471,7 +502,21 @@ task RbfilterBMP;
 endtask
 /***********************************************************/
 
-
+/***********************************************************/
+// blue&greenfilter BMP image 
+task BgfilterBMP;
+        integer y, x, a,b,c;
+        begin
+                for (y=0; y<biHeight*4; y=y+1) begin
+                        for (x=0; x<biWidth; x=x+1) begin 
+                                image_out[y][x][0] = 0; 
+                                image_out[y][x][1] = image_in[y][x][1];
+                                image_out[y][x][2] = image_in[y][x][2];
+                        end
+                end
+        end
+endtask
+/***********************************************************/
 /***********************************************************/
 // pinkfilter (only at R = 255) BMP image
 task pinkfilterBMP;
@@ -535,37 +580,43 @@ initial begin
         writeBMP(write_filename1,0); // write bmp file without filter using 0 as signal.
   
         //using signal as 1 to write the output color matrix into bmp after we apply a filter .
-        BMPto256BW; 
-        BWto24BMP; 
-        writeBMP(write_filename2,1);
+         BMPto256BW; 
+         BWto24BMP; 
+          writeBMP(write_filename2,1);
 
-        toBinary(INTENSITY);
-        BWto24BMP;
-        writeBMP(write_filename3,1);
+         toBinary(INTENSITY);
+             BWto24BMP;
+          writeBMP(write_filename3,1);
         
-        invertBMP;  
-        writeBMP(write_filename4,1);
+         invertBMP;  
+          writeBMP(write_filename4,1);
          
         brightnessBMP(40,1);
-        writeBMP(write_filename5,1);
+          writeBMP(write_filename5,1);
 
-        RedfilterBMP(254);
-        writeBMP(write_filename6,1);
+         RedfilterBMP(10);
+          writeBMP(write_filename6,1);
 
-        BluefilterBMP(254);
-        writeBMP(write_filename7,1);
+         BluefilterBMP(10);
+          writeBMP(write_filename7,1);
 
-        GreenfilterBMP(254);
-        writeBMP(write_filename8,1);
+         GreenfilterBMP(10);
+         writeBMP(write_filename8,1);
 
-        RgfilterBMP;
-        writeBMP(write_filename9,1);
+         RgfilterBMP;
+          writeBMP(write_filename9,1);
 
-        RbfilterBMP;
-        writeBMP(write_filename10,1);
+         RbfilterBMP;
+         writeBMP(write_filename10,1);
 
-        pinkfilterBMP;
-        writeBMP(write_filename11,1);
+          pinkfilterBMP;
+          writeBMP(write_filename11,1);
+
+          BgfilterBMP;
+           writeBMP(write_filename12,1);
+
+        Blurr_BMP(3);
+         writeBMP(write_filename13,1);
 end
 
 endmodule
